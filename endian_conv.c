@@ -24,7 +24,12 @@ int main(int argc, char **argv)
 	printf("Host ordered Address : %x\n", host_add_order);
 	printf("Network ordered Address : %x \n\n", net_add_order);
 
-    
+    if (host_port_order == net_port_order)
+        printf("My System : Big-Endian Policy\n");
+    else
+        printf("My System : Little-Endian Policy\n");
+
+
 
 	return 0;
 }
