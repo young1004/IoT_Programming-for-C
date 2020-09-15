@@ -44,10 +44,6 @@ int main(int argc, char **argv)
     printf("Message from server : %s \n", message);
 
     rev_str(message, rev_message);
-    // strcpy(rev_message, rev_str(message));
-    // rev_message = rev_str(message);
-    // printf("뒤집은 문자열: %s\n", rev_message);
-    // printf("문자열 길이: %ld\n", sizeof(rev_message)); 여기가 문제!
     write(sock, rev_message, sizeof(rev_message));
     close(sock);
 
