@@ -7,7 +7,6 @@
 #include <sys/socket.h>
 
 void error_handling(char *message);
-void rev_str(char* message, char* rev_message);
 
 int main(int argc, char **argv)
 {
@@ -16,8 +15,10 @@ int main(int argc, char **argv)
     struct sockaddr_in serv_addr;
     
     char message[30];
-    char rev_message[30];
+    char rev_message[30] = "";
+    char *ip_addr;
     int str_len;
+
     if (argc != 3)
     {
         printf("Usage: %s <IP> <port> \n", argv[0]);
@@ -35,16 +36,20 @@ int main(int argc, char **argv)
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
         error_handling("connet() error");
 
-    str_len = read(sock, message, sizeof(message) - 1);
+    printf("insert String : ");
+    scanf("%[^\n]", message);
+
+    write(sock, message, sizeof(message));
+
+    str_len = read(sock, rev_message, sizeof(rev_message) - 1);
 
     if (str_len == -1)
         error_handling("read() error!");
 
-    message[str_len] = 0;
-    printf("Message from server : %s \n", message);
+    printf("Message from server : '%s' ", rev_message);
+    ip_addr = inet_ntoa(serv_addr.sin_addr);
+    printf("server ip addr : '%s'\n", ip_addr);
 
-    rev_str(message, rev_message);
-    write(sock, rev_message, sizeof(rev_message));
     close(sock);
 
     return 0;
@@ -57,11 +62,3 @@ void error_handling(char *message)
     exit(1);
 }
 
-void rev_str(char* message, char* rev_message)
-{
-    int len = strlen(message);
-
-    for (int i = len-1; i>=0; i--){
-        rev_message[len-i-1] = message[i];
-    }
-}

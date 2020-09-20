@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 
 void error_handling(char *message);
+void rev_str(char *message, char *rev_message);
 
 int main(int argc, char **argv)
 {
@@ -15,9 +17,21 @@ int main(int argc, char **argv)
     struct sockaddr_in serv_addr;
     struct sockaddr_in clnt_addr;
 
-    char rev_massage[30];
+    char rev_massage[30] = "";
     int clnt_addr_size;
-    char message[] = "Jo Young Gu";
+    char message[30] = "";
+    char *ip_addr;
+
+    time_t conn_time;
+    time_t disconn_time;
+    struct tm *t;
+
+    FILE *log_file;
+
+    log_file = fopen("conn_log.log", "a");
+
+    if (log_file == NULL)
+        printf("파일열기 실패\n");
 
     if (argc != 2)
     {
@@ -45,10 +59,29 @@ int main(int argc, char **argv)
     if (clnt_sock == -1)
         error_handling("accept() error");
 
-    write(clnt_sock, message, sizeof(message));
-    read(clnt_sock, rev_massage, sizeof(rev_massage) -1);
-    printf("Message from client : %s \n", rev_massage);
+    time(&conn_time);
+    t = (struct tm *)localtime(&conn_time);
+    printf("연결 시간: %d년 %d월 %d일 %d시 %d분 %d초\n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+
+    read(clnt_sock, message, sizeof(message) - 1);
+    printf("Message from client : '%s' ", message);
+
+    ip_addr = inet_ntoa(clnt_addr.sin_addr);
+    printf("client ip addr : '%s'\n", ip_addr);
+    fprintf(log_file, "client ip addr : %s\n", ip_addr);
+    fprintf(log_file, "연결 시간: %d년 %d월 %d일 %d시 %d분 %d초\n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+
+    rev_str(message, rev_massage);
+    write(clnt_sock, rev_massage, sizeof(rev_massage));
     close(clnt_sock);
+
+    time(&disconn_time);
+    t = (struct tm *)localtime(&disconn_time);
+    printf("종료 시간: %d년 %d월 %d일 %d시 %d분 %d초\n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+    fprintf(log_file, "종료 시간: %d년 %d월 %d일 %d시 %d분 %d초\n\n", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+
+    fclose(log_file);
+
     return 0;
 }
 
@@ -57,4 +90,14 @@ void error_handling(char *message)
     fputs(message, stderr);
     fputc('\n', stderr);
     exit(1);
+}
+
+void rev_str(char *message, char *rev_message)
+{
+    int len = strlen(message);
+
+    for (int i = len - 1; i >= 0; i--)
+    {
+        rev_message[len - i - 1] = message[i];
+    }
 }
