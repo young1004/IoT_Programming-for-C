@@ -5,9 +5,12 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #define TTL 64
 #define BUFSIZE 30
+
 void error_handling(char *message);
+
 int main(int argc, char **argv)
 {
     int send_sock;
